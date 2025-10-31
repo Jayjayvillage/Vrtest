@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Meta Quest — Throwable Ball (A-Frame)</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/wmurphyrd/aframe-super-hands-component@5.0.3/dist/aframe-super-hands-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene background="color: #88c" renderer="colorManagement: true" physics="debug: false; gravity: 0 -9.8 0">
+      <a-entity id="cameraRig" position="0 1.6 0">
+        <a-entity id="camera" camera look-controls wasd-controls></a-entity>
+        <a-entity id="rightHand" hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcc00" super-hands></a-entity>
+        <a-entity id="leftHand" hand-controls="hand: left; handModelStyle: lowPoly; color: #66ccff" super-hands></a-entity>
+      </a-entity>
+      <a-plane rotation="-90 0 0" width="40" height="40" color="#3a6" static-body></a-plane>
+      <a-box position="0 1 -10" width="20" height="4" depth="1" color="#6a6" static-body></a-box>
+      <a-box id="target" position="0 1 -4" depth="0.5" height="2" width="2" color="#FF5555" static-body></a-box>
+      <script>
+        AFRAME.registerComponent('ball-spawner', {
+          init: function () {
+            const scene = this.el.sceneEl;
+            const camera = scene.querySelector('#camera');
+            function spawnBall() {
+              const camWorld = new THREE.Vector3();
+              camera.object3D.getWorldPosition(camWorld);
+              const forward = new THREE.Vector3(0,0,-1);
+              forward.applyQuaternion(camera.object3D.getWorldQuaternion(new THREE.Quaternion()));
+              const spawnPos = camWorld.clone().add(forward.multiplyScalar(0.8)).add(new THREE.Vector3(0,-0.1,0));
+              const ball = document.createElement('a-sphere');
+              ball.setAttribute('radius', 0.12);
+              ball.setAttribute('position', `${spawnPos.x} ${spawnPos.y} ${spawnPos.z}`);
+              ball.setAttribute('class', 'interactable grabbable');
+              ball.setAttribute('color', '#ffffff');
+              ball.setAttribute('dynamic-body', 'shape: sphere; mass: 0.43');
+              scene.appendChild(ball);
+            }
+            spawnBall();
+            window.addEventListener('keydown', (e) => { if (e.key === 'a' || e.key === 'A') spawnBall(); });
+          }
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+          const scene = document.querySelector('a-scene');
+          scene.setAttribute('ball-spawner', '');
+        });
+      </script>
+    </a-scene>
+  </body>
+</html>
